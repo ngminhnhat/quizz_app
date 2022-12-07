@@ -1,6 +1,7 @@
 import 'package:empty_proj/component/custom_btn.dart';
 import 'package:empty_proj/component/custom_confirm_buy_dialog.dart';
 import 'package:empty_proj/component/item.dart';
+import 'package:empty_proj/component/item_no_background.dart';
 import 'package:flutter/material.dart';
 
 class ItemShop extends StatefulWidget {
@@ -21,7 +22,7 @@ class _ItemShopState extends State<ItemShop> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.all(10),
+        margin: EdgeInsets.all(15),
         width: 100,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -37,6 +38,7 @@ class _ItemShopState extends State<ItemShop> {
                   width: double.infinity,
                   alignment: Alignment.centerRight,
                   decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(128),
                       border: Border.all(color: Colors.grey),
                       borderRadius: BorderRadius.circular(5)),
                   child: widget.cost,
@@ -45,10 +47,7 @@ class _ItemShopState extends State<ItemShop> {
                   width: double.infinity,
                   height: 40,
                   alignment: Alignment.centerLeft,
-                  child: Image.asset(
-                    'assets/images/icons/coin.png',
-                    fit: BoxFit.fitHeight,
-                  ),
+                  child: ItemNoBackground(),
                 ),
               ],
             ),

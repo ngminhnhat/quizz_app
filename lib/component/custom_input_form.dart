@@ -9,7 +9,8 @@ class CustomInputForm extends StatelessWidget {
       this.hint = '',
       this.textSecure = false,
       this.typeKeyboard = TextInputType.text,
-      this.validate})
+      this.validate,
+      this.controllers})
       : super(key: key);
 
   final String label;
@@ -17,6 +18,7 @@ class CustomInputForm extends StatelessWidget {
   final bool textSecure;
   final TextInputType typeKeyboard;
   final StringCallBack? validate;
+  final TextEditingController? controllers;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +33,7 @@ class CustomInputForm extends StatelessWidget {
                     fit: BoxFit.fill)),
             child: SizedBox(
               child: TextFormField(
+                controller: controllers,
                 validator: validate,
                 obscureText: textSecure,
                 keyboardType: typeKeyboard,

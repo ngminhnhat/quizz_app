@@ -5,6 +5,7 @@ class Item extends StatelessWidget {
   const Item({Key? key, this.iconPath = "assets/images/icons/unknow_item.png"})
       : super(key: key);
   final String iconPath;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -15,18 +16,20 @@ class Item extends StatelessWidget {
         ),
       ),
       child: InkWell(
-        onTap: () {
-          showDialog(
-              context: context,
-              builder: ((context) {
-                return CustomDetailDialog();
-              }));
-        },
-        child: Image.asset(
-          iconPath,
-          fit: BoxFit.fitWidth,
-        ),
-      ),
+          onTap: () {
+            showDialog(
+                context: context,
+                builder: ((context) {
+                  return CustomDetailDialog();
+                }));
+          },
+          child: Padding(
+            padding: EdgeInsets.all(10),
+            child: Image.asset(
+              iconPath,
+              fit: BoxFit.fitWidth,
+            ),
+          )),
     );
   }
 }

@@ -1,6 +1,12 @@
+import 'dart:developer';
+import 'package:email_validator/email_validator.dart';
 import 'package:empty_proj/component/custom_btn.dart';
 import 'package:empty_proj/component/custom_input_form.dart';
 import 'package:empty_proj/component/text_stroke.dart';
+import 'package:empty_proj/user/login.dart';
+import 'package:empty_proj/view/home_page.dart';
+import 'package:empty_proj/view/register_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -11,6 +17,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  Services services = Services();
+  // Service service = Service();
+  TextEditingController txtemail = TextEditingController();
+  TextEditingController txtpass = TextEditingController();
+  final _auth = FirebaseAuth.instance;
   final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -46,10 +57,12 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   children: [
                     CustomInputForm(
+                      controllers: txtemail,
                       label: "Email",
                       typeKeyboard: TextInputType.emailAddress,
                     ),
                     CustomInputForm(
+                      controllers: txtpass,
                       label: "Password",
                       textSecure: true,
                       validate: (value) {
@@ -63,7 +76,17 @@ class _LoginPageState extends State<LoginPage> {
                       buttonImagePath: "assets/images/btn_blue.png",
                       text: "Đăng Nhập".toUpperCase(),
                       ontap: () {
-                        print('xử lí đăng nhập');
+                        if (txtemail.text.isNotEmpty &&
+                            txtpass.text.isNotEmpty) {
+                          services.loginUser(
+                              txtemail.text, txtpass.text, context);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Vui lòng nhập cho đầy đủ"),
+                            ),
+                          );
+                        }
                       },
                     ),
                   ],
@@ -82,8 +105,18 @@ class _LoginPageState extends State<LoginPage> {
                             color: Colors.blueAccent,
                             decoration: TextDecoration.underline),
                       ),
-                      onTap: () {
-                        print("Xu li dang ky");
+                      onTap: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => RegisterPage()),
+                        ).then((value) {
+                          if (value != null) {
+                            final snackBar = SnackBar(content: Text(value));
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(snackBar);
+                          }
+                        });
                       },
                     )
                   ],

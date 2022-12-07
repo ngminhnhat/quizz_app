@@ -1,11 +1,19 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empty_proj/component/custom_btn.dart';
 import 'package:empty_proj/component/custom_input_form.dart';
 import 'package:empty_proj/component/text_stroke.dart';
+import 'package:empty_proj/view/login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatelessWidget {
   RegisterPage({Key? key}) : super(key: key);
-
+  TextEditingController nickname = TextEditingController();
+  TextEditingController txtemail = TextEditingController();
+  TextEditingController txtpass = TextEditingController();
+  TextEditingController txtpass2 = TextEditingController();
+  final user = FirebaseAuth.instance.currentUser;
+  final _auth = FirebaseAuth.instance;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -43,13 +51,16 @@ class RegisterPage extends StatelessWidget {
                     child: Column(
                       children: [
                         CustomInputForm(
+                          controllers: nickname,
                           label: "Biệt danh",
                         ),
                         CustomInputForm(
+                          controllers: txtemail,
                           label: "Email",
                           typeKeyboard: TextInputType.emailAddress,
                         ),
                         CustomInputForm(
+                          controllers: txtpass,
                           label: "Mật khẩu",
                           textSecure: true,
                           validate: (value) {
@@ -60,11 +71,12 @@ class RegisterPage extends StatelessWidget {
                           },
                         ),
                         CustomInputForm(
+                          controllers: txtpass2,
                           label: "Xác nhận mật khẩu",
                           textSecure: true,
                           validate: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Con cặt';
+                              return '';
                             }
                             return null;
                           },
@@ -82,9 +94,7 @@ class RegisterPage extends StatelessWidget {
                                       color: Colors.blueAccent,
                                       decoration: TextDecoration.underline),
                                 ),
-                                onTap: () {
-                                  print("Xu li dang ky");
-                                },
+                                onTap: () {},
                               )
                             ],
                           ),
@@ -92,8 +102,58 @@ class RegisterPage extends StatelessWidget {
                         CustomBtn(
                           buttonImagePath: "assets/images/btn_blue.png",
                           text: "Đăng ký ngay".toUpperCase(),
-                          ontap: () {
-                            print('xử lí đang kí');
+                          ontap: () async {
+                            if (txtemail.text.isEmpty ||
+                                txtpass.text.isEmpty ||
+                                nickname.text.isEmpty ||
+                                txtpass2.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Vui lòng nhập cho đầy đủ"),
+                                ),
+                              );
+                            } else if (txtpass.text != txtpass2.text) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                      Text("Vui lòng nhập trùng PassWord"),
+                                ),
+                              );
+                            } else {
+                              try {
+                                final NewUser =
+                                    _auth.createUserWithEmailAndPassword(
+                                        email: txtemail.text,
+                                        password: txtpass.text);
+                                Map<String, dynamic> data = {
+                                  "Coin": 0,
+                                  "Diamond": 0,
+                                  "Email": txtemail.text,
+                                  "Energy": 100,
+                                  "Nickname": nickname.text,
+                                  "PassWord": txtpass.text
+                                };
+                                FirebaseFirestore.instance
+                                    .collection("User")
+                                    .add(data);
+                                if (NewUser != null) {
+                                  Navigator.pop(
+                                      context, 'Đăng kí thành công');
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          "Tài khoản này không hợp lệ"),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                final snackBar = SnackBar(
+                                    content: Text('Có lỗi xảy ra!'));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                              }
+                            }
                           },
                         ),
                       ],

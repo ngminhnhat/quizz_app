@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "912781328129",
+    "project_id": "doan-a650f",
+    "storage_bucket": "doan-a650f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:912781328129:android:3f2e84e6196a88f1c82500",
+        "android_client_info": {
+          "package_name": "com.example.quizz_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "912781328129-m61oddr6h70bsqmklle8jr3mp4sqibkl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_9mp_SBIDPPrcNrxTWD-RaP2Ql_jGd1E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "912781328129-m61oddr6h70bsqmklle8jr3mp4sqibkl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
