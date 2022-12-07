@@ -112,6 +112,14 @@ class RegisterPage extends StatelessWidget {
                                   content: Text("Vui lòng nhập cho đầy đủ"),
                                 ),
                               );
+                            }
+                            if (txtpass.text.length <= 6) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      "Vui lòng nhập PassWord trên 6 kí tự"),
+                                ),
+                              );
                             } else if (txtpass.text != txtpass2.text) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
