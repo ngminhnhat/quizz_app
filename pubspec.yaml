@@ -33,6 +33,7 @@ dependencies:
   flutter:
     sdk: flutter
   flame: ^1.4.0
+  audioplayers: ^1.1.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -71,6 +72,7 @@ flutter:
     - assets/images/
     - assets/images/sprites/
     - assets/images/icons/
+    - assets/audios/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -1,5 +1,7 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:empty_proj/component/custom_btn.dart';
 import 'package:empty_proj/component/text_stroke.dart';
+import 'package:empty_proj/main.dart';
 import 'package:empty_proj/models/quizz_category.dart';
 import 'package:empty_proj/view/ingame_page.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +28,6 @@ class _GameOptionDialogState extends State<GameOptionDialog> {
   // int? selectedTimer;
   // List<String> timers = <String>['10', '20', '30', '40', '50'];
 //
-
   @override
   void initState() {
     selectedCategory = quizzCategorys[0];
@@ -45,6 +46,7 @@ class _GameOptionDialogState extends State<GameOptionDialog> {
             fit: BoxFit.fitWidth),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TextStroke(
             content: "Cấu hình trò chơi".toUpperCase(),
@@ -126,8 +128,9 @@ class _GameOptionDialogState extends State<GameOptionDialog> {
           //   ),
           // ),
           Container(
+            margin: EdgeInsets.symmetric(horizontal: 10),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 CustomBtn(
                   buttonImagePath: "assets/images/btn_blue.png",
@@ -135,6 +138,9 @@ class _GameOptionDialogState extends State<GameOptionDialog> {
                   paddings:
                       EdgeInsets.only(top: 10, bottom: 10, left: 15, right: 15),
                   ontap: () {
+                    player.stop();
+                    player.play(AssetSource("audios/ingame_audio.mp3"));
+                    player.setReleaseMode(ReleaseMode.loop);
                     Navigator.pop(context);
                     Navigator.push(
                         context,

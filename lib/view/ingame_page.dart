@@ -1,9 +1,18 @@
+import 'dart:math';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:empty_proj/component/SlideFadeTransition.dart';
 import 'package:empty_proj/component/custom_btn.dart';
 import 'package:empty_proj/component/custom_dialog.dart';
+import 'package:empty_proj/component/game_option_dialog.dart';
 import 'package:empty_proj/component/selected_answer.dart';
+import 'package:empty_proj/custome_effect/custom_sprite_animate.dart';
+import 'package:empty_proj/main.dart';
+import 'package:empty_proj/models/ingame_answer.dart';
 import 'package:empty_proj/models/question.dart';
 import 'package:empty_proj/view/home_page.dart';
+import 'package:empty_proj/view/result_page.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 class IngamePage extends StatefulWidget {
@@ -16,8 +25,8 @@ class IngamePage extends StatefulWidget {
 }
 
 class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
-  //Code khai báo dữ liệu bỏ vào dưới đây
-  List<Question> dsQuestion = [];
+  //Đưa dl firebase vào dsQuestion
+  List<Question> dsQuestionAll = [];
   //dsChon chứa 1 list danh sách các phương án đã chọn cho 1 câu(1 chỉ số là 1 câu)
   //-1 == chưa chọn
   //0 == chọn A
@@ -25,7 +34,14 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
   //2 == chọn C
   //3 == chọn C
   List<int> dsChon = [];
-
+  List<Question> dsQuestion = [];
+  //
+  //////Không làm gì
+  //Biến này chứa 4 đáp án ABCD để đảo nhau
+  late List<IngameAnswer> answers;
+  //Biến này chứa ds biến trên
+  List<List<IngameAnswer>> _questionAnswer = [];
+  List<int> _selectCache = [];
   //
   late final AnimationController _controller;
   late final AnimationController _controllerReplay;
@@ -34,11 +50,13 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
   late final AnimationController _controllerReplayB;
   late final AnimationController _controllerReplayC;
   late final AnimationController _controllerReplayD;
+  late final AnimationController _controllerRepeat;
   late final Animation<Offset> _offsetAnimationUp;
   late final Animation<Offset> _offsetAnimationUpNext;
   late final Animation<Offset> _offsetAnimationDown;
   late final Animation<Offset> _offsetAnimationLeft;
   late final Animation<Offset> _offsetAnimationRight;
+  late final Animation<double> _rotateAnimation;
   //
   int index = 0;
   bool selectA = false;
@@ -46,8 +64,21 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
   bool selectC = false;
   bool selectD = false;
   bool next = false;
+  bool nextQ = false;
+  bool nextA = false;
+  bool nextB = false;
+  bool nextC = false;
+  bool nextD = false;
   bool leftArrow = false;
   bool rightArrow = true;
+  bool _visible = true;
+  bool _enabled = true;
+  //////
+
+  List<IngameAnswer> getValue(int index) {
+    List<IngameAnswer> temp = _questionAnswer[index];
+    return temp;
+  }
 
   void chooseCase(int chon) {
     switch (chon) {
@@ -97,13 +128,32 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    //Code xử lí dữ liệu bỏ vào dưới đây
-    for (var i = 0; i < widget.soCauHoi; i++) {
+
+    for (var i = 0; i < 100; i++) {
       Question quest = Question(
           i, i, "cauHoi$i", "dapAn1$i", "dapAn2$i", "dapAn3$i", "dapAn4$i", 1);
-      dsQuestion.add(quest);
-      dsChon.add(-1);
+      dsQuestionAll.add(quest);
     }
+    dsQuestionAll.shuffle();
+    //Code xử lí dữ liệu bỏ vào dưới đây
+    for (var i = 0; i < widget.soCauHoi; i++) {
+      dsQuestion.add(dsQuestionAll[Random().nextInt(dsQuestionAll.length)]);
+      dsChon.add(-1);
+      _selectCache.add(-1);
+    }
+    dsQuestion.shuffle();
+    //----------------
+    for (var i = 0; i < dsQuestion.length; i++) {
+      answers = [];
+      answers.add(IngameAnswer(key: 0, value: dsQuestion[i].dapAn1));
+      answers.add(IngameAnswer(key: 1, value: dsQuestion[i].dapAn2));
+      answers.add(IngameAnswer(key: 2, value: dsQuestion[i].dapAn3));
+      answers.add(IngameAnswer(key: 3, value: dsQuestion[i].dapAn4));
+      answers.shuffle();
+      _questionAnswer.add(answers);
+    }
+
+    //
     //
     _controller = AnimationController(
       duration: const Duration(milliseconds: 500),
@@ -116,29 +166,34 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
     );
     //
     _controllerReplayQ = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 200),
       vsync: this,
     );
     //
     _controllerReplayA = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 200),
       vsync: this,
     );
     //
     _controllerReplayB = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 200),
       vsync: this,
     );
     //
     _controllerReplayC = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 200),
       vsync: this,
     );
     //
     _controllerReplayD = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 200),
       vsync: this,
     );
+    //
+    _controllerRepeat = AnimationController(
+      duration: const Duration(minutes: 5),
+      vsync: this,
+    )..repeat();
     //
     _offsetAnimationUp = Tween<Offset>(
       begin: const Offset(0, -1.2),
@@ -165,19 +220,64 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.ease));
     //
+    _rotateAnimation =
+        Tween<double>(begin: 0, end: 360).animate(_controllerRepeat);
+    //
+
     _controllerReplay.forward();
     _controller.forward();
+    Future.delayed(
+      const Duration(milliseconds: 400),
+      () {
+        _controllerReplayQ.forward();
+        setState(() {
+          _visible = false;
+        });
+      },
+    );
+    Future.delayed(
+      const Duration(milliseconds: 450),
+      () {
+        _controllerReplayA.forward();
+      },
+    );
+    Future.delayed(
+      const Duration(milliseconds: 500),
+      () {
+        _controllerReplayB.forward();
+      },
+    );
+    Future.delayed(
+      const Duration(milliseconds: 550),
+      () {
+        _controllerReplayC.forward();
+      },
+    );
+    Future.delayed(
+      const Duration(milliseconds: 600),
+      () {
+        _controllerReplayD.forward();
+      },
+    );
   }
 
   @override
   void dispose() {
+    _controllerRepeat.dispose();
     _controllerReplay.dispose();
+    _controllerReplayQ.dispose();
+    _controllerReplayA.dispose();
+    _controllerReplayB.dispose();
+    _controllerReplayC.dispose();
+    _controllerReplayD.dispose();
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    AudioPlayer _player = AudioPlayer();
+
     return WillPopScope(
         child: Scaffold(
           body: Center(
@@ -186,11 +286,106 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
               padding: EdgeInsets.only(top: 25, bottom: 5, left: 16, right: 16),
               decoration: BoxDecoration(
                   image: DecorationImage(
-                      image: AssetImage("assets/images/inamge_bg.png"),
+                      image: _visible
+                          ? AssetImage("assets/images/inamge_bg2.png")
+                          : AssetImage("assets/images/inamge_bg.png"),
                       fit: BoxFit.fitHeight)),
               child: Stack(
                 alignment: AlignmentDirectional.center,
                 children: <Widget>[
+                  Visibility(
+                    visible: _visible,
+                    child: Positioned.fill(
+                      top: -100,
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 5),
+                        child: Container(
+                          width: double.infinity,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Container(
+                                width: 150,
+                                height: double.infinity,
+                                child: GameWidget(
+                                    game: CustomSpriteAnimate(
+                                  spritePath: "sprites/lig_ty_009.png",
+                                  column: 5,
+                                  row: 2,
+                                  steptime: 0.05,
+                                  sizes: Vector2(150, 700),
+                                )),
+                              ),
+                              Container(
+                                width: 150,
+                                height: double.infinity,
+                                child: GameWidget(
+                                    game: CustomSpriteAnimate(
+                                  spritePath: "sprites/lig_ty_009.png",
+                                  column: 5,
+                                  row: 2,
+                                  steptime: 0.05,
+                                  sizes: Vector2(150, 700),
+                                )),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: _visible,
+                    child: Positioned.fill(
+                      top: -50,
+                      child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 5),
+                          child: Container(
+                            width: double.infinity,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Container(
+                                  width: 150,
+                                  height: double.infinity,
+                                  child: GameWidget(
+                                      game: CustomSpriteAnimate(
+                                    spritePath:
+                                        "sprites/Fx_Lightning01_Sylvie_Alpha_W.png",
+                                    column: 4,
+                                    row: 1,
+                                    steptime: 0.05,
+                                    sizes: Vector2(150, 600),
+                                  )),
+                                ),
+                                Container(
+                                  width: 150,
+                                  height: double.infinity,
+                                  child: GameWidget(
+                                      game: CustomSpriteAnimate(
+                                    spritePath:
+                                        "sprites/Fx_Lightning01_W_01.png",
+                                    column: 4,
+                                    row: 1,
+                                    steptime: 0.05,
+                                    sizes: Vector2(150, 600),
+                                  )),
+                                ),
+                              ],
+                            ),
+                          )),
+                    ),
+                  ),
+                  RotationTransition(
+                    turns: _rotateAnimation,
+                    child: Container(
+                        width: 600,
+                        child: Image.asset(
+                          "assets/images/sprites/Fx_WaterWave01.png",
+                          fit: BoxFit.fitWidth,
+                        )),
+                  ),
                   Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -219,9 +414,8 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       SlideFadeTransition(
-                        exit: next,
-                        controller: _controllerReplay,
-                        aniDuration: Duration(milliseconds: 500),
+                        exit: nextQ,
+                        controller: _controllerReplayQ,
                         curveIn: Curves.ease,
                         curveOut: Curves.ease,
                         oBeginOut: Offset.zero,
@@ -254,9 +448,8 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                         ),
                       ),
                       SlideFadeTransition(
-                        exit: next,
-                        controller: _controllerReplay,
-                        aniDuration: Duration(milliseconds: 500),
+                        exit: nextA,
+                        controller: _controllerReplayA,
                         curveIn: Curves.ease,
                         curveOut: Curves.ease,
                         oBeginOut: Offset.zero,
@@ -266,22 +459,22 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                         child: SelectedAnswer(
                           selected: selectA,
                           cauSo: "A",
-                          cauTraLoi: dsQuestion[index].dapAn1,
+                          cauTraLoi: getValue(index)[0].value,
                           ontap: () {
                             setState(() {
                               selectA = !selectA;
                               selectB = false;
                               selectC = false;
                               selectD = false;
-                              dsChon[index] = 0;
+                              dsChon[index] = getValue(index)[0].key;
+                              _selectCache[index] = 0;
                             });
                           },
                         ),
                       ),
                       SlideFadeTransition(
-                        exit: next,
-                        controller: _controllerReplay,
-                        aniDuration: Duration(milliseconds: 500),
+                        exit: nextB,
+                        controller: _controllerReplayB,
                         curveIn: Curves.ease,
                         curveOut: Curves.ease,
                         oBeginOut: Offset.zero,
@@ -291,22 +484,22 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                         child: SelectedAnswer(
                           selected: selectB,
                           cauSo: "B",
-                          cauTraLoi: dsQuestion[index].dapAn2,
+                          cauTraLoi: getValue(index)[1].value,
                           ontap: (() {
                             setState(() {
                               selectA = false;
                               selectB = !selectB;
                               selectC = false;
                               selectD = false;
-                              dsChon[index] = 1;
+                              dsChon[index] = getValue(index)[1].key;
+                              _selectCache[index] = 1;
                             });
                           }),
                         ),
                       ),
                       SlideFadeTransition(
-                        exit: next,
-                        controller: _controllerReplay,
-                        aniDuration: Duration(milliseconds: 500),
+                        exit: nextC,
+                        controller: _controllerReplayC,
                         curveIn: Curves.ease,
                         curveOut: Curves.ease,
                         oBeginOut: Offset.zero,
@@ -316,22 +509,22 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                         child: SelectedAnswer(
                           selected: selectC,
                           cauSo: "C",
-                          cauTraLoi: dsQuestion[index].dapAn3,
+                          cauTraLoi: getValue(index)[2].value,
                           ontap: () {
                             setState(() {
                               selectA = false;
                               selectB = false;
                               selectC = !selectC;
                               selectD = false;
-                              dsChon[index] = 2;
+                              dsChon[index] = getValue(index)[2].key;
+                              _selectCache[index] = 2;
                             });
                           },
                         ),
                       ),
                       SlideFadeTransition(
-                        exit: next,
-                        controller: _controllerReplay,
-                        aniDuration: Duration(milliseconds: 500),
+                        exit: nextD,
+                        controller: _controllerReplayD,
                         curveIn: Curves.ease,
                         curveOut: Curves.ease,
                         oBeginOut: Offset.zero,
@@ -341,14 +534,15 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                         child: SelectedAnswer(
                           selected: selectD,
                           cauSo: "D",
-                          cauTraLoi: dsQuestion[index].dapAn4,
+                          cauTraLoi: getValue(index)[3].value,
                           ontap: () {
                             setState(() {
                               selectA = false;
                               selectB = false;
                               selectC = false;
                               selectD = !selectD;
-                              dsChon[index] = 3;
+                              dsChon[index] = getValue(index)[3].key;
+                              _selectCache[index] = 3;
                             });
                           },
                         ),
@@ -370,33 +564,133 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                               SlideTransition(
                                 position: _offsetAnimationLeft,
                                 child: InkWell(
-                                  onTap: () {
-                                    print(index);
-                                    if (index > 0) {
-                                      setState(() {
-                                        next = true;
-                                        _controllerReplay.reset();
-                                        _controllerReplay.forward();
-                                        chooseCase(dsChon[index]);
-                                        rightArrow = true;
-                                      });
-                                      Future.delayed(
-                                          Duration(milliseconds: 500), (() {
-                                        setState(() {
-                                          index--;
-                                          chooseCase(dsChon[index]);
-                                          next = false;
-                                          _controllerReplay.reset();
-                                          _controllerReplay.forward();
-                                        });
-                                      }));
-                                    }
-                                    if (index == 0) {
-                                      setState(() {
-                                        leftArrow = false;
-                                      });
-                                    }
-                                  },
+                                  onTap: _enabled
+                                      ? () {
+                                          if (index > 0) {
+                                            index--;
+                                            setState(() {
+                                              _enabled = false;
+                                              nextQ = true;
+                                              _controllerReplayQ.reset();
+                                              _controllerReplayQ.forward();
+                                              _visible = true;
+                                              _player.play(
+                                                  AssetSource(
+                                                      "audios/active.mp3"),
+                                                  mode: PlayerMode.lowLatency);
+                                            });
+                                            Future.delayed(
+                                                Duration(milliseconds: 50),
+                                                (() {
+                                              setState(() {
+                                                nextA = true;
+                                                _controllerReplayA.reset();
+                                                _controllerReplayA.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 100),
+                                                (() {
+                                              setState(() {
+                                                nextB = true;
+                                                _controllerReplayB.reset();
+                                                _controllerReplayB.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 150),
+                                                (() {
+                                              setState(() {
+                                                nextC = true;
+                                                _controllerReplayC.reset();
+                                                _controllerReplayC.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 200),
+                                                (() {
+                                              setState(() {
+                                                nextD = true;
+                                                _controllerReplayD.reset();
+                                                _controllerReplayD.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 500),
+                                                (() {
+                                              setState(() {
+                                                next = true;
+                                                _controllerReplay.reset();
+                                                _controllerReplay.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1000),
+                                                (() {
+                                              setState(() {
+                                                chooseCase(_selectCache[index]);
+                                                next = false;
+                                                _controllerReplay.reset();
+                                                _controllerReplay.forward();
+                                                if (index == 0) {
+                                                  setState(() {
+                                                    leftArrow = false;
+                                                  });
+                                                }
+                                                rightArrow = true;
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1400),
+                                                (() {
+                                              setState(() {
+                                                nextQ = false;
+                                                _controllerReplayQ.reset();
+                                                _controllerReplayQ.forward();
+                                                _visible = false;
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1450),
+                                                (() {
+                                              setState(() {
+                                                nextA = false;
+                                                _controllerReplayA.reset();
+                                                _controllerReplayA.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1500),
+                                                (() {
+                                              setState(() {
+                                                nextB = false;
+                                                _controllerReplayB.reset();
+                                                _controllerReplayB.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1550),
+                                                (() {
+                                              setState(() {
+                                                nextC = false;
+                                                _controllerReplayC.reset();
+                                                _controllerReplayC.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1600),
+                                                (() {
+                                              setState(() {
+                                                _enabled = true;
+                                                nextD = false;
+                                                _controllerReplayD.reset();
+                                                _controllerReplayD.forward();
+                                              });
+                                            }));
+                                          }
+                                          print(index);
+                                        }
+                                      : null,
                                   child: ColorFiltered(
                                     colorFilter: ColorFilter.mode(
                                         leftArrow
@@ -425,31 +719,133 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                               SlideTransition(
                                 position: _offsetAnimationRight,
                                 child: InkWell(
-                                  onTap: () {
-                                    if (index < dsQuestion.length - 1) {
-                                      setState(() {
-                                        next = true;
-                                        _controllerReplay.reset();
-                                        _controllerReplay.forward();
-                                        leftArrow = true;
-                                        Future.delayed(
-                                            Duration(milliseconds: 500), (() {
-                                          setState(() {
-                                            index += 1;
-                                            chooseCase(dsChon[index]);
-                                            next = false;
-                                            _controllerReplay.reset();
-                                            _controllerReplay.forward();
-                                          });
-                                        }));
-                                      });
-                                    }
-                                    if (index == dsQuestion.length - 1) {
-                                      setState(() {
-                                        rightArrow = false;
-                                      });
-                                    }
-                                  },
+                                  onTap: _enabled
+                                      ? () {
+                                          if (index < dsQuestion.length - 1) {
+                                            _player.play(
+                                                AssetSource(
+                                                    "audios/active.mp3"),
+                                                mode: PlayerMode.lowLatency);
+                                            setState(() {
+                                              _enabled = false;
+                                              index += 1;
+                                              nextQ = true;
+                                              _controllerReplayQ.reset();
+                                              _controllerReplayQ.forward();
+                                              _visible = true;
+                                            });
+                                            Future.delayed(
+                                                Duration(milliseconds: 50),
+                                                (() {
+                                              setState(() {
+                                                nextA = true;
+                                                _controllerReplayA.reset();
+                                                _controllerReplayA.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 100),
+                                                (() {
+                                              setState(() {
+                                                nextB = true;
+                                                _controllerReplayB.reset();
+                                                _controllerReplayB.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 150),
+                                                (() {
+                                              setState(() {
+                                                nextC = true;
+                                                _controllerReplayC.reset();
+                                                _controllerReplayC.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 200),
+                                                (() {
+                                              setState(() {
+                                                nextD = true;
+                                                _controllerReplayD.reset();
+                                                _controllerReplayD.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 500),
+                                                (() {
+                                              setState(() {
+                                                next = true;
+                                                _controllerReplay.reset();
+                                                _controllerReplay.forward();
+                                              });
+                                            }));
+                                            leftArrow = true;
+                                            Future.delayed(
+                                                Duration(milliseconds: 1000),
+                                                (() {
+                                              setState(() {
+                                                chooseCase(_selectCache[index]);
+                                                next = false;
+                                                _controllerReplay.reset();
+                                                _controllerReplay.forward();
+                                                if (index ==
+                                                    dsQuestion.length - 1) {
+                                                  setState(() {
+                                                    rightArrow = false;
+                                                  });
+                                                }
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1400),
+                                                (() {
+                                              setState(() {
+                                                nextQ = false;
+                                                _controllerReplayQ.reset();
+                                                _controllerReplayQ.forward();
+                                                _visible = false;
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1450),
+                                                (() {
+                                              setState(() {
+                                                nextA = false;
+                                                _controllerReplayA.reset();
+                                                _controllerReplayA.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1500),
+                                                (() {
+                                              setState(() {
+                                                nextB = false;
+                                                _controllerReplayB.reset();
+                                                _controllerReplayB.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1550),
+                                                (() {
+                                              setState(() {
+                                                nextC = false;
+                                                _controllerReplayC.reset();
+                                                _controllerReplayC.forward();
+                                              });
+                                            }));
+                                            Future.delayed(
+                                                Duration(milliseconds: 1600),
+                                                (() {
+                                              setState(() {
+                                                nextD = false;
+                                                _enabled = true;
+                                                _controllerReplayD.reset();
+                                                _controllerReplayD.forward();
+                                              });
+                                            }));
+                                          }
+                                        }
+                                      : null,
                                   child: ColorFiltered(
                                     colorFilter: ColorFilter.mode(
                                         rightArrow
@@ -488,6 +884,11 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                                               Navigator.pop(context);
                                             }),
                                             onTapConfirm: () {
+                                              player.stop();
+                                              player.play(AssetSource(
+                                                  "audios/common_audio.mp3"));
+                                              player.setReleaseMode(
+                                                  ReleaseMode.loop);
                                               Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
@@ -512,6 +913,26 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                                               onTapCancel: (() {
                                                 Navigator.pop(context);
                                               }),
+                                              onTapConfirm: (() {
+                                                player.stop();
+                                                player.play(AssetSource(
+                                                    "audios/common_audio.mp3"));
+                                                player.setReleaseMode(
+                                                    ReleaseMode.loop);
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: ((context) =>
+                                                          ResultPage(
+                                                            cauTraLoi: dsChon,
+                                                            cauHoi: dsQuestion,
+                                                            questionAnswer:
+                                                                _questionAnswer,
+                                                            selectedCache:
+                                                                _selectCache,
+                                                          ))),
+                                                );
+                                              }),
                                             )));
                                   } else {
                                     showDialog(
@@ -523,6 +944,26 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                                         onTapCancel: (() {
                                           Navigator.pop(context);
                                         }),
+                                        onTapConfirm: () {
+                                          player.stop();
+                                          player.play(AssetSource(
+                                              "audios/common_audio.mp3"));
+                                          player
+                                              .setReleaseMode(ReleaseMode.loop);
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: ((context) =>
+                                                    ResultPage(
+                                                      cauTraLoi: dsChon,
+                                                      cauHoi: dsQuestion,
+                                                      questionAnswer:
+                                                          _questionAnswer,
+                                                      selectedCache:
+                                                          _selectCache,
+                                                    ))),
+                                          );
+                                        },
                                       ),
                                     );
                                   }
@@ -550,6 +991,9 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                       Navigator.of(context).pop(false);
                     },
                     onTapConfirm: () {
+                      player.stop();
+                      player.play(AssetSource("audios/common_audio.mp3"));
+                      player.setReleaseMode(ReleaseMode.loop);
                       Navigator.of(context).pop(true);
                     },
                   )));

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 class SlideFadeTransition extends StatefulWidget {
   SlideFadeTransition({
     Key? key,
-    required this.aniDuration,
     required this.child,
     this.exit = false,
     required this.curveIn,
@@ -18,7 +17,7 @@ class SlideFadeTransition extends StatefulWidget {
     required this.oEndIn,
     required this.controller,
   }) : super(key: key);
-  final Duration aniDuration;
+
   final Widget child;
   final Curve curveIn;
   final Curve curveOut;
