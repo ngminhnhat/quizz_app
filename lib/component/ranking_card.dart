@@ -3,9 +3,16 @@ import 'package:empty_proj/view/user_detail_page.dart';
 import 'package:flutter/material.dart';
 
 class RankingCard extends StatelessWidget {
-  const RankingCard({Key? key, this.name = ""}) : super(key: key);
+  const RankingCard(
+      {Key? key,
+      this.name = "",
+      this.edgeInset = const EdgeInsets.only(left: 5),
+      this.diem = 0})
+      : super(key: key);
 
   final String name;
+  final int diem;
+  final EdgeInsets edgeInset;
 
   @override
   Widget build(BuildContext context) {
@@ -32,17 +39,13 @@ class RankingCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 75),
-                  child: Text(
-                    name,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                )
-              ],
+            Container(
+              alignment: Alignment.topLeft,
+              padding: edgeInset,
+              child: Text(
+                name,
+                style: const TextStyle(fontSize: 16),
+              ),
             ),
             Container(
               alignment: Alignment.bottomRight,
@@ -58,7 +61,7 @@ class RankingCard extends StatelessWidget {
                     ),
                   ),
                   TextStroke(
-                    content: "1245",
+                    content: diem.toString(),
                     fontsize: 35,
                     fontfamily: "SVN-DeterminationSans",
                   )

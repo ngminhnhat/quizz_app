@@ -35,6 +35,7 @@ class _AuthUserPageState extends State<AuthUserPage> {
   final _user = FirebaseAuth.instance.currentUser;
   String _uid = "";
   String _name = "";
+  String _email = "";
   Timestamp stamp = Timestamp.now();
   final _now = DateFormat.yMMMMd().format(DateTime.now()).toString();
   List<Question> dsQuestionAll = [];
@@ -69,6 +70,7 @@ class _AuthUserPageState extends State<AuthUserPage> {
       });
     }
   }
+
   //lz má căng z ta
   //camwg vc a
 
@@ -80,6 +82,7 @@ class _AuthUserPageState extends State<AuthUserPage> {
     setState(() {
       // print('email ${user.email}');
       _name = userdoc.get('Nickname');
+      _email = userdoc.get('Email');
     });
     // _date = userdoc.get('CreateDate');
     print("name nay ban ${_now}");
@@ -117,6 +120,25 @@ class _AuthUserPageState extends State<AuthUserPage> {
                     ),
                     TextStroke(
                       content: _name,
+                      fontsize: 20,
+                      fontfamily: "SVN-DeterminationSans",
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                margin:
+                    EdgeInsets.only(top: 10, bottom: 10, left: 50, right: 50),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextStroke(
+                      content: "Email:",
+                      fontsize: 20,
+                      strokesize: 2,
+                    ),
+                    TextStroke(
+                      content: _email,
                       fontsize: 20,
                       fontfamily: "SVN-DeterminationSans",
                     ),

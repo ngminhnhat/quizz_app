@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empty_proj/component/custom_btn.dart';
 import 'package:empty_proj/component/game_option_dialog.dart';
 import 'package:empty_proj/component/text_stroke.dart';
@@ -6,6 +7,7 @@ import 'package:empty_proj/models/ingame_answer.dart';
 import 'package:empty_proj/models/question.dart';
 import 'package:empty_proj/view/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ResultPage extends StatefulWidget {
   const ResultPage(
@@ -26,19 +28,33 @@ class ResultPage extends StatefulWidget {
 }
 
 class _ResultPageState extends State<ResultPage> {
+  final _user = FirebaseAuth.instance.currentUser;
+  final _auth = FirebaseAuth.instance;
+  String _uid = "";
+  String _email = "";
   late int score;
   late int numOfCorrect;
   late int streak;
   late double percent;
-  @override
   void initState() {
     super.initState();
     score = GameLogic().scoreCalculator(widget.cauHoi, widget.cauTraLoi);
     numOfCorrect = GameLogic().correctAnswer(widget.cauHoi, widget.cauTraLoi);
     streak = GameLogic().correctStreak(widget.cauHoi, widget.cauTraLoi);
     percent = GameLogic().percent(widget.cauHoi, widget.cauTraLoi);
+    User user = _auth.currentUser!;
+    FirebaseFirestore.instance.collection('history').add({
+      "emailuser": user.email,
+      "socauhoi": widget.cauHoi.length,
+      "socautraloidung": numOfCorrect,
+      "diem": score,
+      "ngaychoi": DateTime.now(),
+    });
   }
+
 //Đưa vào firebase
+
+  @override
 
 //
 
@@ -304,6 +320,7 @@ class _ResultPageState extends State<ResultPage> {
       onWillPop: () async {
         Navigator.push(
             context, MaterialPageRoute(builder: ((context) => HomePage())));
+
         return false;
       },
     );
