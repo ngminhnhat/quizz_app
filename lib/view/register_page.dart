@@ -12,7 +12,7 @@ class RegisterPage extends StatelessWidget {
   TextEditingController txtemail = TextEditingController();
   TextEditingController txtpass = TextEditingController();
   TextEditingController txtpass2 = TextEditingController();
-  final user = FirebaseAuth.instance.currentUser;
+  final _user = FirebaseAuth.instance.currentUser;
   final _auth = FirebaseAuth.instance;
   final _formKey = GlobalKey<FormState>();
 
@@ -129,24 +129,26 @@ class RegisterPage extends StatelessWidget {
                               );
                             } else {
                               try {
-                                final NewUser =
-                                    _auth.createUserWithEmailAndPassword(
+                                UserCredential NewUser = await FirebaseAuth
+                                    .instance
+                                    .createUserWithEmailAndPassword(
                                         email: txtemail.text,
                                         password: txtpass.text);
-                                Map<String, dynamic> data = {
+                                User? user = NewUser.user;
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(user?.uid)
+                                    .set({
                                   "Coin": 0,
                                   "Diamond": 0,
                                   "Email": txtemail.text,
                                   "Energy": 100,
                                   "Nickname": nickname.text,
-                                  "PassWord": txtpass.text
-                                };
-                                FirebaseFirestore.instance
-                                    .collection("User")
-                                    .add(data);
+                                  "PassWord": txtpass.text,
+                                  "CreateDate": DateTime.now(),
+                                });
                                 if (NewUser != null) {
-                                  Navigator.pop(
-                                      context, 'Đăng kí thành công');
+                                  Navigator.pop(context, "Thành công");
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -157,7 +159,7 @@ class RegisterPage extends StatelessWidget {
                                 }
                               } catch (e) {
                                 final snackBar = SnackBar(
-                                    content: Text('Có lỗi xảy ra!'));
+                                    content: Text('Email đã tồn tại!'));
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(snackBar);
                               }

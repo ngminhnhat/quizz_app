@@ -1,9 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empty_proj/component/custom_btn.dart';
 import 'package:empty_proj/component/logo.dart';
 import 'package:empty_proj/component/text_stroke.dart';
+import 'package:empty_proj/models/question.dart';
 import 'package:empty_proj/view/home_page.dart';
+import 'package:empty_proj/view/resetPassword.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AuthUserPage extends StatefulWidget {
   const AuthUserPage(
@@ -24,6 +28,64 @@ class AuthUserPage extends StatefulWidget {
 }
 
 class _AuthUserPageState extends State<AuthUserPage> {
+  //
+
+  //
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _user = FirebaseAuth.instance.currentUser;
+  String _uid = "";
+  String _name = "";
+  Timestamp stamp = Timestamp.now();
+  final _now = DateFormat.yMMMMd().format(DateTime.now()).toString();
+
+  @override
+  void initState() {
+    super.initState();
+    getQuestionData();
+    getdata();
+  }
+
+  void getQuestionData() async {
+    QuerySnapshot query =
+        await FirebaseFirestore.instance.collection("Cauhois").get();
+    if (query.docs.isNotEmpty) {
+      setState(() {
+        query.docs.forEach((element) {
+          Question temp = Question(
+              element['id'],
+              element['linhvucid'],
+              element['cauhoi'],
+              element['dapan1'],
+              element['dapan2'],
+              element['dapan3'],
+              element['dapan4'],
+              element['dapandung']);
+          print(temp.cauHoi);
+          //dsQuestionAll.add(temp);
+        });
+      }); // trong fire base a
+      //có 1(hay nhiều câu ko có dòng dap án dung)
+      //má tuấn ẩu r đó
+      //100 câu dò oải
+    }
+  }
+  //lz má căng z ta
+  //camwg vc a
+
+  void getdata() async {
+    User user = _auth.currentUser!;
+    _uid = user.uid;
+    final DocumentSnapshot userdoc =
+        await FirebaseFirestore.instance.collection('users').doc(_uid).get();
+    setState(() {
+      // print('email ${user.email}');
+      _name = userdoc.get('Nickname');
+    });
+    // _date = userdoc.get('CreateDate');
+    print("name nay ban ${_now}");
+    return;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,15 +109,15 @@ class _AuthUserPageState extends State<AuthUserPage> {
                     EdgeInsets.only(top: 10, bottom: 10, left: 50, right: 50),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+                  children: <Widget>[
                     TextStroke(
                       content: "Nickname:",
                       fontsize: 20,
                       strokesize: 2,
                     ),
                     TextStroke(
-                      content: widget.nickname,
-                      fontsize: 35,
+                      content: _name,
+                      fontsize: 20,
                       fontfamily: "SVN-DeterminationSans",
                     ),
                   ],
@@ -73,8 +135,8 @@ class _AuthUserPageState extends State<AuthUserPage> {
                       strokesize: 2,
                     ),
                     TextStroke(
-                      content: widget.created_at,
-                      fontsize: 35,
+                      content: _now,
+                      fontsize: 20,
                       fontfamily: "SVN-DeterminationSans",
                     ),
                   ],
@@ -133,6 +195,12 @@ class _AuthUserPageState extends State<AuthUserPage> {
                       buttonImagePath: "assets/images/btn_purple.png",
                       text: "Thay đổi mật khẩu".toUpperCase(),
                       paddings: EdgeInsets.all(20),
+                      ontap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Resetpassword()));
+                      },
                     )
                   ],
                 ),

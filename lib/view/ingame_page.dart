@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empty_proj/component/SlideFadeTransition.dart';
 import 'package:empty_proj/component/custom_btn.dart';
 import 'package:empty_proj/component/custom_dialog.dart';
@@ -125,33 +126,55 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
     return check;
   }
 
+  void getQuestionData() async {
+    QuerySnapshot query = await FirebaseFirestore.instance
+        .collection("Cauhois")
+        .where("linhvucid", isEqualTo: 1)
+        .get();
+    if (query.docs.isNotEmpty) {
+      setState(() {
+        query.docs.forEach((element) {
+          Question temp = Question(
+              element['id'],
+              element['linhvucid'],
+              element['cauhoi'],
+              element['dapan1'],
+              element['dapan2'],
+              element['dapan3'],
+              element['dapan4'],
+              element['dapandung']);
+          print(temp.cauHoi);
+          dsQuestionAll.add(temp);
+          dsQuestionAll.shuffle();
+          //Code xử lí dữ liệu bỏ vào dưới đây
+          for (var i = 0; i < widget.soCauHoi; i++) {
+            dsQuestion
+                .add(dsQuestionAll[Random().nextInt(dsQuestionAll.length)]);
+            dsChon.add(-1);
+            _selectCache.add(-1);
+          }
+          dsQuestion.shuffle();
+          //----------------
+          for (var i = 0; i < dsQuestion.length; i++) {
+            answers = [];
+            answers.add(IngameAnswer(key: 0, value: dsQuestion[i].dapAn1));
+            answers.add(IngameAnswer(key: 1, value: dsQuestion[i].dapAn2));
+            answers.add(IngameAnswer(key: 2, value: dsQuestion[i].dapAn3));
+            answers.add(IngameAnswer(key: 3, value: dsQuestion[i].dapAn4));
+            answers.shuffle();
+            _questionAnswer.add(answers);
+          }
+        });
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-
-    for (var i = 0; i < 100; i++) {
-      Question quest = Question(
-          i, i, "cauHoi$i", "dapAn1$i", "dapAn2$i", "dapAn3$i", "dapAn4$i", 1);
-      dsQuestionAll.add(quest);
-    }
-    dsQuestionAll.shuffle();
-    //Code xử lí dữ liệu bỏ vào dưới đây
-    for (var i = 0; i < widget.soCauHoi; i++) {
-      dsQuestion.add(dsQuestionAll[Random().nextInt(dsQuestionAll.length)]);
-      dsChon.add(-1);
-      _selectCache.add(-1);
-    }
-    dsQuestion.shuffle();
-    //----------------
-    for (var i = 0; i < dsQuestion.length; i++) {
-      answers = [];
-      answers.add(IngameAnswer(key: 0, value: dsQuestion[i].dapAn1));
-      answers.add(IngameAnswer(key: 1, value: dsQuestion[i].dapAn2));
-      answers.add(IngameAnswer(key: 2, value: dsQuestion[i].dapAn3));
-      answers.add(IngameAnswer(key: 3, value: dsQuestion[i].dapAn4));
-      answers.shuffle();
-      _questionAnswer.add(answers);
-    }
+    //
+    getQuestionData();
+    //
 
     //
     //
