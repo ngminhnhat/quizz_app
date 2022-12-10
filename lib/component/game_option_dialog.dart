@@ -15,11 +15,11 @@ class GameOptionDialog extends StatefulWidget {
 }
 
 class _GameOptionDialogState extends State<GameOptionDialog> {
-  QuizzCategory? selectedCategory;
+  late QuizzCategory? selectedCategory;
 // Lay du lieu tu firebase
   List<QuizzCategory> quizzCategorys = <QuizzCategory>[
-    const QuizzCategory('1', "CNTT"),
-    const QuizzCategory('2', 'Lịch sử')
+    const QuizzCategory(1, "Toán"),
+    const QuizzCategory(2, 'Địa lí')
   ];
 //
 // Gan cung du lieu sau nay xu li
@@ -65,7 +65,7 @@ class _GameOptionDialogState extends State<GameOptionDialog> {
                       (QuizzCategory value) {
                     return DropdownMenuItem<QuizzCategory>(
                       value: value,
-                      child: Text(value.name + ' ' + value.id),
+                      child: Text(value.name + ' ' + value.id.toString()),
                     );
                   }).toList(),
                   onChanged: ((QuizzCategory? value) {
@@ -148,6 +148,7 @@ class _GameOptionDialogState extends State<GameOptionDialog> {
                         MaterialPageRoute(
                             builder: ((context) => IngamePage(
                                   soCauHoi: selectedNumQuest,
+                                  linhvcucid: selectedCategory!.id,
                                 ))));
                   },
                 ),

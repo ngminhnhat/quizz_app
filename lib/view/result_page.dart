@@ -47,7 +47,7 @@ class _ResultPageState extends State<ResultPage> {
     return temp;
   }
 
-  Widget res(int i) {
+  Widget res(int index) {
     bool resA = false;
     bool resB = false;
     bool resC = false;
@@ -57,14 +57,31 @@ class _ResultPageState extends State<ResultPage> {
     bool chooseC = false;
     bool chooseD = false;
     int key = -1;
-    List<IngameAnswer> answers = getValue(i);
-
+    List<IngameAnswer> answers = getValue(index);
+    print("start debug");
+    print(widget.cauHoi[index].cauHoi +
+        " " +
+        widget.cauHoi[index].dapAn1 +
+        " " +
+        widget.cauHoi[index].dapAn2 +
+        " " +
+        widget.cauHoi[index].dapAn3 +
+        " " +
+        widget.cauHoi[index].dapAn4 +
+        " " +
+        widget.cauHoi[index].dapAnDung.toString());
+    print("key answer");
     for (var i = 0; i < answers.length; i++) {
-      if (answers[i].key == widget.cauHoi[i].dapAnDung) {
+      print(answers[i].key.compareTo(widget.cauHoi[index].dapAnDung));
+      if (answers[i].key == widget.cauHoi[index].dapAnDung) {
         key = i;
+        print("true");
         break;
       }
     }
+    print("key $index");
+    print(key);
+    print("end of debug");
 
     switch (key) {
       case 0:
@@ -82,7 +99,7 @@ class _ResultPageState extends State<ResultPage> {
 
       default:
     }
-    switch (widget.selectedCache[i]) {
+    switch (widget.selectedCache[index]) {
       case 0:
         chooseA = true;
         break;
@@ -106,8 +123,8 @@ class _ResultPageState extends State<ResultPage> {
           borderRadius: BorderRadius.circular(10),
           color: Colors.black.withOpacity(0.5)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text("Câu " + (i + 1).toString() + ":"),
-        Text(widget.cauHoi[i].cauHoi),
+        Text("Câu " + (index + 1).toString() + ":"),
+        Text(widget.cauHoi[index].cauHoi),
         Container(
           padding: EdgeInsets.all(10),
           margin: EdgeInsets.all(5),
@@ -187,8 +204,7 @@ class _ResultPageState extends State<ResultPage> {
                   ),
                   Positioned(
                     bottom: 5,
-                    child: Container(
-                      margin: EdgeInsets.only(left: 15, right: 15),
+                    child: FittedBox(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

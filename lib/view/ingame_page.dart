@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empty_proj/component/SlideFadeTransition.dart';
 import 'package:empty_proj/component/custom_btn.dart';
 import 'package:empty_proj/component/custom_dialog.dart';
-import 'package:empty_proj/component/game_option_dialog.dart';
 import 'package:empty_proj/component/selected_answer.dart';
 import 'package:empty_proj/custome_effect/custom_sprite_animate.dart';
 import 'package:empty_proj/main.dart';
@@ -17,9 +16,11 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 class IngamePage extends StatefulWidget {
-  const IngamePage({Key? key, this.soCauHoi = 0}) : super(key: key);
+  const IngamePage({Key? key, this.soCauHoi = 0, this.linhvcucid = 0})
+      : super(key: key);
 
   final int soCauHoi;
+  final int linhvcucid;
 
   @override
   _IngamePageState createState() => _IngamePageState();
@@ -126,56 +127,38 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
     return check;
   }
 
-  void getQuestionData() async {
-    QuerySnapshot query = await FirebaseFirestore.instance
-        .collection("Cauhois")
-        .where("linhvucid", isEqualTo: 1)
-        .get();
-    if (query.docs.isNotEmpty) {
-      setState(() {
-        query.docs.forEach((element) {
-          Question temp = Question(
-              element['id'],
-              element['linhvucid'],
-              element['cauhoi'],
-              element['dapan1'],
-              element['dapan2'],
-              element['dapan3'],
-              element['dapan4'],
-              element['dapandung']);
-          print(temp.cauHoi);
-          dsQuestionAll.add(temp);
-          dsQuestionAll.shuffle();
-          //Code xử lí dữ liệu bỏ vào dưới đây
-          for (var i = 0; i < widget.soCauHoi; i++) {
-            dsQuestion
-                .add(dsQuestionAll[Random().nextInt(dsQuestionAll.length)]);
-            dsChon.add(-1);
-            _selectCache.add(-1);
-          }
-          dsQuestion.shuffle();
-          //----------------
-          for (var i = 0; i < dsQuestion.length; i++) {
-            answers = [];
-            answers.add(IngameAnswer(key: 0, value: dsQuestion[i].dapAn1));
-            answers.add(IngameAnswer(key: 1, value: dsQuestion[i].dapAn2));
-            answers.add(IngameAnswer(key: 2, value: dsQuestion[i].dapAn3));
-            answers.add(IngameAnswer(key: 3, value: dsQuestion[i].dapAn4));
-            answers.shuffle();
-            _questionAnswer.add(answers);
-          }
-        });
-      });
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     //
     getQuestionData();
     //
-
+    for (var i = 0; i < widget.soCauHoi; i++) {
+      dsQuestionAll.add(const Question(
+          0,
+          0,
+          "Đang tải câu hỏi...",
+          "Đang tải đáp án...",
+          "Đang tải đáp án...",
+          "Đang tải đáp án...",
+          "Đang tải đáp án...",
+          0));
+    }
+    for (var i = 0; i < widget.soCauHoi; i++) {
+      dsQuestion.add(dsQuestionAll[i]);
+      dsChon.add(-1);
+      _selectCache.add(-1);
+    }
+    //----------------
+    for (var i = 0; i < dsQuestion.length; i++) {
+      answers = [];
+      answers.add(IngameAnswer(key: 0, value: dsQuestion[i].dapAn1));
+      answers.add(IngameAnswer(key: 1, value: dsQuestion[i].dapAn2));
+      answers.add(IngameAnswer(key: 2, value: dsQuestion[i].dapAn3));
+      answers.add(IngameAnswer(key: 3, value: dsQuestion[i].dapAn4));
+      answers.shuffle();
+      _questionAnswer.add(answers);
+    }
     //
     //
     _controller = AnimationController(
@@ -295,6 +278,63 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
     _controllerReplayD.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void getQuestionData() async {
+    QuerySnapshot query = await FirebaseFirestore.instance
+        .collection("Cauhois")
+        .where("linhvucid", isEqualTo: widget.linhvcucid)
+        .get();
+    dsQuestionAll = [];
+    dsQuestion = [];
+    _selectCache = [];
+    dsChon = [];
+    _questionAnswer = [];
+    if (query.docs.isNotEmpty) {
+      setState(() {
+        query.docs.forEach((element) {
+          Question temp = Question(
+              element['id'],
+              element['linhvucid'],
+              element['cauhoi'],
+              element['dapan1'],
+              element['dapan2'],
+              element['dapan3'],
+              element['dapan4'],
+              element['dapandung']);
+          dsQuestionAll.add(temp);
+        });
+        dsQuestionAll.shuffle();
+        //Code xử lí dữ liệu bỏ vào dưới đây
+        for (var i = 0; i < widget.soCauHoi; i++) {
+          dsQuestion.add(dsQuestionAll[Random().nextInt(dsQuestionAll.length)]);
+          dsChon.add(-1);
+          _selectCache.add(-1);
+        }
+        dsQuestion.shuffle();
+        //----------------
+        for (var i = 0; i < dsQuestion.length; i++) {
+          answers = [];
+          answers.add(IngameAnswer(key: 0, value: dsQuestion[i].dapAn1));
+          answers.add(IngameAnswer(key: 1, value: dsQuestion[i].dapAn2));
+          answers.add(IngameAnswer(key: 2, value: dsQuestion[i].dapAn3));
+          answers.add(IngameAnswer(key: 3, value: dsQuestion[i].dapAn4));
+          answers.shuffle();
+          _questionAnswer.add(answers);
+          print(dsQuestion[i].cauHoi +
+              " " +
+              dsQuestion[i].dapAn1 +
+              " " +
+              dsQuestion[i].dapAn2 +
+              " " +
+              dsQuestion[i].dapAn3 +
+              " " +
+              dsQuestion[i].dapAn4 +
+              " " +
+              dsQuestion[i].dapAnDung.toString());
+        }
+      });
+    }
   }
 
   @override
@@ -463,9 +503,12 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                                   'Câu ' + (index + 1).toString() + ":",
                                   style: TextStyle(fontSize: 20),
                                 ),
-                                Text(
-                                  dsQuestion[index].cauHoi,
-                                  style: TextStyle(fontSize: 16),
+                                Container(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    dsQuestion[index].cauHoi,
+                                    style: TextStyle(fontSize: 16),
+                                  ),
                                 ),
                               ]),
                         ),

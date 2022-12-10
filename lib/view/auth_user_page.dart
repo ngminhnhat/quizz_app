@@ -37,6 +37,7 @@ class _AuthUserPageState extends State<AuthUserPage> {
   String _name = "";
   Timestamp stamp = Timestamp.now();
   final _now = DateFormat.yMMMMd().format(DateTime.now()).toString();
+  List<Question> dsQuestionAll = [];
 
   @override
   void initState() {
@@ -46,8 +47,10 @@ class _AuthUserPageState extends State<AuthUserPage> {
   }
 
   void getQuestionData() async {
-    QuerySnapshot query =
-        await FirebaseFirestore.instance.collection("Cauhois").get();
+    QuerySnapshot query = await FirebaseFirestore.instance
+        .collection("Cauhois")
+        .where("linhvucid", isEqualTo: 1)
+        .get();
     if (query.docs.isNotEmpty) {
       setState(() {
         query.docs.forEach((element) {
@@ -60,13 +63,10 @@ class _AuthUserPageState extends State<AuthUserPage> {
               element['dapan3'],
               element['dapan4'],
               element['dapandung']);
-          print(temp.cauHoi);
-          //dsQuestionAll.add(temp);
+          print(temp);
+          dsQuestionAll.add(temp);
         });
-      }); // trong fire base a
-      //có 1(hay nhiều câu ko có dòng dap án dung)
-      //má tuấn ẩu r đó
-      //100 câu dò oải
+      });
     }
   }
   //lz má căng z ta
