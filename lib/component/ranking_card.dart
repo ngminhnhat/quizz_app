@@ -1,28 +1,40 @@
 import 'package:empty_proj/component/text_stroke.dart';
+import 'package:empty_proj/models/game_history.dart';
+import 'package:empty_proj/models/user.dart';
 import 'package:empty_proj/view/user_detail_page.dart';
 import 'package:flutter/material.dart';
 
 class RankingCard extends StatelessWidget {
-  const RankingCard(
+  RankingCard(
       {Key? key,
-      this.name = "",
       this.edgeInset = const EdgeInsets.only(left: 5),
-      this.diem = 0})
+      required this.gameHistory,
+      required this.user})
       : super(key: key);
 
-  final String name;
-  final int diem;
   final EdgeInsets edgeInset;
+  final User user;
+  final GameHistory gameHistory;
+
+  int a = 0;
+
+  void count() async {
+    List<GameHistory> list = await GameHistory.getByEmail(user.email);
+    a = list.length;
+  }
 
   @override
   Widget build(BuildContext context) {
+    count();
     return InkWell(
       onTap: (() {
         Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => UserDetailPage(
-                    nickname: name,
+                    user: user,
+                    gameHistory: gameHistory,
+                    gameplayed: a,
                   )),
         );
       }),
@@ -43,7 +55,7 @@ class RankingCard extends StatelessWidget {
               alignment: Alignment.topLeft,
               padding: edgeInset,
               child: Text(
-                name,
+                user.nickname,
                 style: const TextStyle(fontSize: 16),
               ),
             ),
@@ -61,7 +73,7 @@ class RankingCard extends StatelessWidget {
                     ),
                   ),
                   TextStroke(
-                    content: diem.toString(),
+                    content: gameHistory.diem.toString(),
                     fontsize: 35,
                     fontfamily: "SVN-DeterminationSans",
                   )

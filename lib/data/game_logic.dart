@@ -3,7 +3,8 @@ import 'package:empty_proj/models/question.dart';
 class GameLogic {
   GameLogic();
 
-  int scoreCalculator(List<Question> question, List<int> answers) {
+  int scoreCalculator(List<Question> question, List<int> answers, int thoigian,
+      int thoigianconlai) {
     int res = 0;
     for (var i = 0; i < question.length; i++) {
       int temp = 0;
@@ -20,6 +21,30 @@ class GameLogic {
       }
       temp *= streak;
       res += temp;
+    }
+    switch (thoigian) {
+      case 1:
+        res *= 10;
+        break;
+      case 10:
+        res *= 5;
+        break;
+      case 20:
+        res *= 4;
+        break;
+      case 30:
+        res *= 3;
+        break;
+      case 40:
+        res *= 2;
+        break;
+      case 50:
+        res *= 1;
+        break;
+      default:
+    }
+    if (res != 0) {
+      res += thoigianconlai;
     }
     return res;
   }

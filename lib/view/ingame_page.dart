@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -10,17 +11,21 @@ import 'package:empty_proj/custome_effect/custom_sprite_animate.dart';
 import 'package:empty_proj/main.dart';
 import 'package:empty_proj/models/ingame_answer.dart';
 import 'package:empty_proj/models/question.dart';
+import 'package:empty_proj/models/quizz_category.dart';
 import 'package:empty_proj/view/home_page.dart';
 import 'package:empty_proj/view/result_page.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:quiver/async.dart';
 
 class IngamePage extends StatefulWidget {
-  const IngamePage({Key? key, this.soCauHoi = 0, this.linhvcucid = 0})
+  const IngamePage(
+      {Key? key, this.soCauHoi = 0, required this.linhvuc, this.thoigian = 0})
       : super(key: key);
 
   final int soCauHoi;
-  final int linhvcucid;
+  final QuizzCategory linhvuc;
+  final int thoigian;
 
   @override
   _IngamePageState createState() => _IngamePageState();
@@ -44,6 +49,10 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
   //Biến này chứa ds biến trên
   List<List<IngameAnswer>> _questionAnswer = [];
   List<int> _selectCache = [];
+  //
+  late int starttime = widget.thoigian * 60;
+  late int current = starttime;
+  late StreamSubscription<CountdownTimer> sub;
   //
   late final AnimationController _controller;
   late final AnimationController _controllerReplay;
@@ -283,7 +292,7 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
   void getQuestionData() async {
     QuerySnapshot query = await FirebaseFirestore.instance
         .collection("Cauhois")
-        .where("linhvucid", isEqualTo: widget.linhvcucid)
+        .where("linhvucid", isEqualTo: widget.linhvuc.id)
         .get();
     dsQuestionAll = [];
     dsQuestion = [];
@@ -335,6 +344,37 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
         }
       });
     }
+    startTimer();
+  }
+
+  void startTimer() {
+    CountdownTimer countDownTimer = new CountdownTimer(
+      new Duration(seconds: starttime),
+      new Duration(seconds: 1),
+    );
+
+    sub = countDownTimer.listen(null);
+    sub.onData((duration) {
+      setState(() {
+        current = starttime - duration.elapsed.inSeconds;
+      });
+    });
+
+    sub.onDone(() {
+      sub.cancel();
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: ((context) => ResultPage(
+                    cauTraLoi: dsChon,
+                    cauHoi: dsQuestion,
+                    questionAnswer: _questionAnswer,
+                    selectedCache: _selectCache,
+                    thoigian: widget.thoigian,
+                    thoigianconlai: current,
+                    linhvuc: widget.linhvuc,
+                  ))));
+    });
   }
 
   @override
@@ -619,6 +659,29 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        Container(
+                          margin: EdgeInsets.only(left: 50, right: 50),
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.8)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                ((current / 60).toInt()).toString(),
+                                style: TextStyle(fontSize: 20),
+                              ),
+                              Text(
+                                ':',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                              Text(
+                                ((current % 60).toInt()).toString(),
+                                style: TextStyle(fontSize: 20),
+                              )
+                            ],
+                          ),
+                        ),
                         Container(
                           decoration: BoxDecoration(
                               image: DecorationImage(
@@ -950,6 +1013,7 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                                               Navigator.pop(context);
                                             }),
                                             onTapConfirm: () {
+                                              sub.cancel();
                                               player.stop();
                                               player.play(AssetSource(
                                                   "audios/common_audio.mp3"));
@@ -980,6 +1044,7 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                                                 Navigator.pop(context);
                                               }),
                                               onTapConfirm: (() {
+                                                sub.cancel();
                                                 player.stop();
                                                 player.play(AssetSource(
                                                     "audios/common_audio.mp3"));
@@ -996,6 +1061,12 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                                                                 _questionAnswer,
                                                             selectedCache:
                                                                 _selectCache,
+                                                            thoigian:
+                                                                widget.thoigian,
+                                                            thoigianconlai:
+                                                                current,
+                                                            linhvuc:
+                                                                widget.linhvuc,
                                                           ))),
                                                 );
                                               }),
@@ -1011,6 +1082,7 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                                           Navigator.pop(context);
                                         }),
                                         onTapConfirm: () {
+                                          sub.cancel();
                                           player.stop();
                                           player.play(AssetSource(
                                               "audios/common_audio.mp3"));
@@ -1027,6 +1099,9 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                                                           _questionAnswer,
                                                       selectedCache:
                                                           _selectCache,
+                                                      thoigian: widget.thoigian,
+                                                      thoigianconlai: current,
+                                                      linhvuc: widget.linhvuc,
                                                     ))),
                                           );
                                         },
@@ -1057,6 +1132,7 @@ class _IngamePageState extends State<IngamePage> with TickerProviderStateMixin {
                       Navigator.of(context).pop(false);
                     },
                     onTapConfirm: () {
+                      sub.cancel();
                       player.stop();
                       player.play(AssetSource("audios/common_audio.mp3"));
                       player.setReleaseMode(ReleaseMode.loop);

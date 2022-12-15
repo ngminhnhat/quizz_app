@@ -1,23 +1,32 @@
+import 'dart:math';
+
 import 'package:empty_proj/component/logo.dart';
 import 'package:empty_proj/component/text_stroke.dart';
+import 'package:empty_proj/models/game_history.dart';
+import 'package:empty_proj/models/user.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class UserDetailPage extends StatelessWidget {
-  const UserDetailPage(
+  UserDetailPage(
       {Key? key,
-      this.nickname = "",
-      this.created_at = "",
-      this.hightest_score = "",
-      this.game_played = ""})
+      required this.user,
+      required this.gameHistory,
+      this.gameplayed = 0})
       : super(key: key);
 
-  final String nickname;
-  final String created_at;
-  final String hightest_score;
-  final String game_played;
+  final User user;
+  final GameHistory gameHistory;
+  int gameplayed;
+
+  void count() async {
+    List<GameHistory> list = await GameHistory.fetchAll();
+    gameplayed = list.length;
+  }
 
   @override
   Widget build(BuildContext context) {
+    count();
     return Scaffold(
       body: Center(
         child: Container(
@@ -36,18 +45,18 @@ class UserDetailPage extends StatelessWidget {
               ),
               Container(
                 margin:
-                    EdgeInsets.only(top: 10, bottom: 10, left: 50, right: 50),
+                    EdgeInsets.only(top: 10, bottom: 10, left: 25, right: 25),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextStroke(
                       content: "Nickname:",
-                      fontsize: 20,
+                      fontsize: 15,
                       strokesize: 2,
                     ),
                     TextStroke(
-                      content: nickname,
-                      fontsize: 35,
+                      content: user.nickname,
+                      fontsize: 20,
                       fontfamily: "SVN-DeterminationSans",
                     ),
                   ],
@@ -55,18 +64,18 @@ class UserDetailPage extends StatelessWidget {
               ),
               Container(
                 margin:
-                    EdgeInsets.only(top: 10, bottom: 10, left: 50, right: 50),
+                    EdgeInsets.only(top: 10, bottom: 10, left: 25, right: 25),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextStroke(
                       content: "Ngày tạo:",
-                      fontsize: 20,
+                      fontsize: 15,
                       strokesize: 2,
                     ),
                     TextStroke(
-                      content: created_at,
-                      fontsize: 35,
+                      content: user.createdate,
+                      fontsize: 20,
                       fontfamily: "SVN-DeterminationSans",
                     ),
                   ],
@@ -74,18 +83,18 @@ class UserDetailPage extends StatelessWidget {
               ),
               Container(
                 margin:
-                    EdgeInsets.only(top: 10, bottom: 10, left: 50, right: 50),
+                    EdgeInsets.only(top: 10, bottom: 10, left: 25, right: 25),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextStroke(
                       content: "Số lượt chơi:",
-                      fontsize: 20,
+                      fontsize: 15,
                       strokesize: 2,
                     ),
                     TextStroke(
-                      content: game_played,
-                      fontsize: 35,
+                      content: gameplayed.toString(),
+                      fontsize: 20,
                       fontfamily: "SVN-DeterminationSans",
                     ),
                   ],
@@ -93,18 +102,18 @@ class UserDetailPage extends StatelessWidget {
               ),
               Container(
                 margin:
-                    EdgeInsets.only(top: 10, bottom: 10, left: 50, right: 50),
+                    EdgeInsets.only(top: 10, bottom: 10, left: 25, right: 25),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextStroke(
                       content: "Điểm cao nhất:",
-                      fontsize: 20,
+                      fontsize: 15,
                       strokesize: 2,
                     ),
                     TextStroke(
-                      content: hightest_score,
-                      fontsize: 35,
+                      content: gameHistory.diem.toString(),
+                      fontsize: 20,
                       fontfamily: "SVN-DeterminationSans",
                     ),
                   ],

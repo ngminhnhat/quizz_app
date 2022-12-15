@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empty_proj/component/custom_btn.dart';
 import 'package:empty_proj/component/logo.dart';
 import 'package:empty_proj/component/text_stroke.dart';
+import 'package:empty_proj/models/game_history.dart';
 import 'package:empty_proj/models/question.dart';
 import 'package:empty_proj/view/home_page.dart';
 import 'package:empty_proj/view/resetPassword.dart';
@@ -10,18 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class AuthUserPage extends StatefulWidget {
-  const AuthUserPage(
-      {Key? key,
-      this.nickname = "",
-      this.created_at = "",
-      this.hightest_score = "",
-      this.game_played = ""})
-      : super(key: key);
-
-  final String nickname;
-  final String created_at;
-  final String hightest_score;
-  final String game_played;
+  const AuthUserPage({Key? key}) : super(key: key);
 
   @override
   _AuthUserPageState createState() => _AuthUserPageState();
@@ -29,7 +19,8 @@ class AuthUserPage extends StatefulWidget {
 
 class _AuthUserPageState extends State<AuthUserPage> {
   //
-
+  int hightest_score = 0;
+  int game_played = 0;
   //
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final _user = FirebaseAuth.instance.currentUser;
@@ -37,42 +28,29 @@ class _AuthUserPageState extends State<AuthUserPage> {
   String _name = "";
   String _email = "";
   Timestamp stamp = Timestamp.now();
-  final _now = DateFormat.yMMMMd().format(DateTime.now()).toString();
-  List<Question> dsQuestionAll = [];
-
+  String _now = DateFormat('dd-MM-yyyy').format(DateTime.now()).toString();
+  List<GameHistory> _gameHistory = [];
   @override
   void initState() {
     super.initState();
-    getQuestionData();
     getdata();
+    getHistory();
   }
 
-  void getQuestionData() async {
-    QuerySnapshot query = await FirebaseFirestore.instance
-        .collection("Cauhois")
-        .where("linhvucid", isEqualTo: 1)
-        .get();
-    if (query.docs.isNotEmpty) {
-      setState(() {
-        query.docs.forEach((element) {
-          Question temp = Question(
-              element['id'],
-              element['linhvucid'],
-              element['cauhoi'],
-              element['dapan1'],
-              element['dapan2'],
-              element['dapan3'],
-              element['dapan4'],
-              element['dapandung']);
-          print(temp);
-          dsQuestionAll.add(temp);
-        });
-      });
-    }
-  }
+  void getHistory() async {
+    String? temp = FirebaseAuth.instance.currentUser!.email;
+    final data = await GameHistory.getByEmail(temp!);
 
-  //lz má căng z ta
-  //camwg vc a
+    setState(() {
+      _gameHistory = data;
+      for (var element in _gameHistory) {
+        if (element.diem > hightest_score) {
+          hightest_score = element.diem;
+        }
+      }
+      game_played = _gameHistory.length;
+    });
+  }
 
   void getdata() async {
     User user = _auth.currentUser!;
@@ -83,9 +61,10 @@ class _AuthUserPageState extends State<AuthUserPage> {
       // print('email ${user.email}');
       _name = userdoc.get('Nickname');
       _email = userdoc.get('Email');
+      _now = DateFormat('dd-MM-yyyy')
+          .format(userdoc.get('CreateDate').toDate())
+          .toString();
     });
-    // _date = userdoc.get('CreateDate');
-    print("name nay ban ${_now}");
     return;
   }
 
@@ -176,7 +155,7 @@ class _AuthUserPageState extends State<AuthUserPage> {
                       strokesize: 2,
                     ),
                     TextStroke(
-                      content: widget.game_played,
+                      content: game_played.toString(),
                       fontsize: 35,
                       fontfamily: "SVN-DeterminationSans",
                     ),
@@ -195,7 +174,7 @@ class _AuthUserPageState extends State<AuthUserPage> {
                       strokesize: 2,
                     ),
                     TextStroke(
-                      content: widget.hightest_score,
+                      content: hightest_score.toString(),
                       fontsize: 35,
                       fontfamily: "SVN-DeterminationSans",
                     ),

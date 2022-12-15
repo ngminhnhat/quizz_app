@@ -5,10 +5,15 @@ import 'package:empty_proj/component/text_stroke.dart';
 import 'package:empty_proj/main.dart';
 import 'package:empty_proj/models/quizz_category.dart';
 import 'package:empty_proj/view/ingame_page.dart';
+import 'package:empty_proj/view/multi_lobby.dart';
 import 'package:flutter/material.dart';
 
 class GameOptionDialog extends StatefulWidget {
-  const GameOptionDialog({Key? key}) : super(key: key);
+  const GameOptionDialog({Key? key, this.title = "", this.multi = false})
+      : super(key: key);
+
+  final String title;
+  final bool multi;
 
   @override
   _GameOptionDialogState createState() => _GameOptionDialogState();
@@ -18,22 +23,36 @@ class _GameOptionDialogState extends State<GameOptionDialog> {
   late QuizzCategory? selectedCategory;
 // Lay du lieu tu firebase
   List<QuizzCategory> quizzCategorys = <QuizzCategory>[
-    const QuizzCategory(1, "Toán"),
-    const QuizzCategory(2, 'Địa lí')
+    const QuizzCategory(0, "Loading.."),
   ];
 //
 // Gan cung du lieu sau nay xu li
   late int selectedNumQuest;
   List<String> numOfQuestions = <String>['10', '20', '30', '40'];
   //
-  // int? selectedTimer;
-  // List<String> timers = <String>['10', '20', '30', '40', '50'];
+  int? selectedTimer;
+  List<String> timers = <String>['1', '10', '20', '30', '40', '50'];
+//
+  void getCategory() async {
+    QuerySnapshot query =
+        await FirebaseFirestore.instance.collection('linhvucs').get();
+    if (query.docs.isNotEmpty) {
+      quizzCategorys = [];
+      for (var element in query.docs) {
+        quizzCategorys.add(QuizzCategory(element['id'], element['name']));
+      }
+      selectedCategory = quizzCategorys[0];
+    }
+    setState(() {});
+  }
+
 //
   @override
   void initState() {
     selectedCategory = quizzCategorys[0];
     selectedNumQuest = int.parse(numOfQuestions[0]);
-    //selectedTimer = int.parse(timers[0]);
+    selectedTimer = int.parse(timers[0]);
+    getCategory();
   }
 
   dialogContent(BuildContext context) {
@@ -50,7 +69,7 @@ class _GameOptionDialogState extends State<GameOptionDialog> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TextStroke(
-            content: "Cấu hình trò chơi".toUpperCase(),
+            content: widget.title.toUpperCase(),
             fontsize: 20,
             fontfamily: "SVN-DeterminationSans",
           ),
@@ -103,31 +122,31 @@ class _GameOptionDialogState extends State<GameOptionDialog> {
               ],
             ),
           ),
-          // Container(
-          //   child: Row(
-          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //     children: [
-          //       Text("Chọn thời gian"),
-          //       Container(
-          //         child: DropdownButton(
-          //           value: selectedTimer.toString(),
-          //           items: timers.map<DropdownMenuItem<String>>((String value) {
-          //             return DropdownMenuItem(
-          //               value: value,
-          //               child: Text(value + ' ' + 'phút'),
-          //             );
-          //           }).toList(),
-          //           onChanged: ((String? value) {
-          //             setState(() {
-          //               selectedTimer = int.parse(value ?? '0');
-          //               print(selectedTimer);
-          //             });
-          //           }),
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
+          Container(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Chọn thời gian"),
+                Container(
+                  child: DropdownButton(
+                    value: selectedTimer.toString(),
+                    items: timers.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem(
+                        value: value,
+                        child: Text(value + ' ' + 'phút'),
+                      );
+                    }).toList(),
+                    onChanged: ((String? value) {
+                      setState(() {
+                        selectedTimer = int.parse(value ?? '0');
+                        print(selectedTimer);
+                      });
+                    }),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Container(
             margin: EdgeInsets.symmetric(horizontal: 10),
             child: Row(
@@ -143,13 +162,23 @@ class _GameOptionDialogState extends State<GameOptionDialog> {
                     player.play(AssetSource("audios/ingame_audio.mp3"));
                     player.setReleaseMode(ReleaseMode.loop);
                     Navigator.pop(context);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: ((context) => IngamePage(
-                                  soCauHoi: selectedNumQuest,
-                                  linhvcucid: selectedCategory!.id,
-                                ))));
+                    widget.multi
+                        ? Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: ((context) => MultiLobby(
+                                      soCauHoi: selectedNumQuest,
+                                      linhvuc: selectedCategory!,
+                                      thoigian: selectedTimer!,
+                                    ))))
+                        : Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: ((context) => IngamePage(
+                                      soCauHoi: selectedNumQuest,
+                                      linhvuc: selectedCategory!,
+                                      thoigian: selectedTimer!,
+                                    ))));
                   },
                 ),
                 CustomBtn(

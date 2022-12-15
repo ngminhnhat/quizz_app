@@ -1,13 +1,15 @@
 import 'package:empty_proj/component/logo.dart';
 import 'package:empty_proj/component/text_stroke.dart';
 import 'package:empty_proj/custome_effect/custom_sprite_animate.dart';
+import 'package:empty_proj/models/game_history.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 class HistoryDetailPage extends StatelessWidget {
-  const HistoryDetailPage({Key? key, this.name = ""}) : super(key: key);
+  const HistoryDetailPage({Key? key, required this.gameHistory})
+      : super(key: key);
 
-  final String name;
+  final GameHistory gameHistory;
 
   @override
   Widget build(BuildContext context) {
@@ -32,13 +34,13 @@ class HistoryDetailPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextStroke(
-                    content: "Trận đấu số:",
+                    content: "Trận đấu ngày: ",
                     strokesize: 2,
-                    fontsize: 20,
+                    fontsize: 15,
                   ),
                   TextStroke(
-                    content: name,
-                    fontsize: 35,
+                    content: gameHistory.ngaychoi,
+                    fontsize: 20,
                     fontfamily: "SVN-DeterminationSans",
                   ),
                 ],
@@ -52,11 +54,11 @@ class HistoryDetailPage extends StatelessWidget {
                   TextStroke(
                     content: "Ngày chơi:",
                     strokesize: 2,
-                    fontsize: 20,
+                    fontsize: 15,
                   ),
                   TextStroke(
-                    content: name,
-                    fontsize: 35,
+                    content: gameHistory.ngaychoi,
+                    fontsize: 20,
                     fontfamily: "SVN-DeterminationSans",
                   ),
                 ],
@@ -70,11 +72,11 @@ class HistoryDetailPage extends StatelessWidget {
                   TextStroke(
                     content: "Số câu hỏi:",
                     strokesize: 2,
-                    fontsize: 20,
+                    fontsize: 15,
                   ),
                   TextStroke(
-                    content: name,
-                    fontsize: 35,
+                    content: gameHistory.socauhoi.toString(),
+                    fontsize: 20,
                     fontfamily: "SVN-DeterminationSans",
                   ),
                 ],
@@ -88,11 +90,31 @@ class HistoryDetailPage extends StatelessWidget {
                   TextStroke(
                     content: "Số câu trả lời đúng:",
                     strokesize: 2,
-                    fontsize: 20,
+                    fontsize: 15,
                   ),
                   TextStroke(
-                    content: name,
-                    fontsize: 35,
+                    content: gameHistory.socautraloidung.toString(),
+                    fontsize: 20,
+                    fontfamily: "SVN-DeterminationSans",
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextStroke(
+                    content: "Thời gian trả lời:",
+                    strokesize: 2,
+                    fontsize: 15,
+                  ),
+                  TextStroke(
+                    content:
+                        (gameHistory.thoigiantraloi / 60).toInt().toString() +
+                            "phút",
+                    fontsize: 20,
                     fontfamily: "SVN-DeterminationSans",
                   ),
                 ],
@@ -106,11 +128,34 @@ class HistoryDetailPage extends StatelessWidget {
                   TextStroke(
                     content: "Thời gian hoàn thành:",
                     strokesize: 2,
-                    fontsize: 20,
+                    fontsize: 15,
                   ),
                   TextStroke(
-                    content: name,
-                    fontsize: 35,
+                    content: (gameHistory.thoigianconlai / 60)
+                            .toInt()
+                            .toString() +
+                        "phút" +
+                        (gameHistory.thoigianconlai % 60).toInt().toString() +
+                        "giây",
+                    fontsize: 20,
+                    fontfamily: "SVN-DeterminationSans",
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextStroke(
+                    content: "Điểm số:",
+                    strokesize: 2,
+                    fontsize: 15,
+                  ),
+                  TextStroke(
+                    content: gameHistory.diem.toString(),
+                    fontsize: 20,
                     fontfamily: "SVN-DeterminationSans",
                   ),
                 ],

@@ -5,23 +5,30 @@ import 'package:empty_proj/component/text_stroke.dart';
 import 'package:empty_proj/data/game_logic.dart';
 import 'package:empty_proj/models/ingame_answer.dart';
 import 'package:empty_proj/models/question.dart';
+import 'package:empty_proj/models/quizz_category.dart';
 import 'package:empty_proj/view/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ResultPage extends StatefulWidget {
-  const ResultPage(
-      {Key? key,
-      required this.cauTraLoi,
-      required this.cauHoi,
-      required this.questionAnswer,
-      required this.selectedCache})
-      : super(key: key);
+  const ResultPage({
+    Key? key,
+    required this.cauTraLoi,
+    required this.cauHoi,
+    required this.questionAnswer,
+    required this.selectedCache,
+    required this.thoigian,
+    required this.thoigianconlai,
+    required this.linhvuc,
+  }) : super(key: key);
 
   final List<Question> cauHoi;
   final List<int> cauTraLoi;
   final List<int> selectedCache;
   final List<List<IngameAnswer>> questionAnswer;
+  final int thoigian;
+  final int thoigianconlai;
+  final QuizzCategory linhvuc;
 
   @override
   _ResultPageState createState() => _ResultPageState();
@@ -36,27 +43,49 @@ class _ResultPageState extends State<ResultPage> {
   late int numOfCorrect;
   late int streak;
   late double percent;
+
+  void updateUser() async {
+    try {
+      final user = await FirebaseFirestore.instance
+          .collection('users')
+          .where('Email', isEqualTo: FirebaseAuth.instance.currentUser!.email)
+          .limit(1)
+          .get()
+          .then((QuerySnapshot snapshot) {
+        //Here we get the document reference and return to the post variable.
+        return snapshot.docs[0].reference;
+      });
+
+      var batch = FirebaseFirestore.instance.batch();
+      //Updates the field value, using post as document reference
+      batch.update(user, {'Coin': FieldValue.increment(score)});
+      batch.commit();
+    } catch (e) {
+      print(e);
+    }
+  }
+
   void initState() {
     super.initState();
-    score = GameLogic().scoreCalculator(widget.cauHoi, widget.cauTraLoi);
+    score = GameLogic().scoreCalculator(widget.cauHoi, widget.cauTraLoi,
+        widget.thoigian, widget.thoigianconlai);
     numOfCorrect = GameLogic().correctAnswer(widget.cauHoi, widget.cauTraLoi);
     streak = GameLogic().correctStreak(widget.cauHoi, widget.cauTraLoi);
     percent = GameLogic().percent(widget.cauHoi, widget.cauTraLoi);
-    User user = _auth.currentUser!;
-    FirebaseFirestore.instance.collection('history').add({
-      "emailuser": user.email,
-      "socauhoi": widget.cauHoi.length,
-      "socautraloidung": numOfCorrect,
-      "diem": score,
-      "ngaychoi": DateTime.now(),
-    });
+    if (_user != null) {
+      User user = _auth.currentUser!;
+      FirebaseFirestore.instance.collection('history').add({
+        "emailuser": user.email,
+        "socauhoi": widget.cauHoi.length,
+        "socautraloidung": numOfCorrect,
+        "thoigiantraloi": widget.thoigian * 60,
+        "thoigianconlai": widget.thoigianconlai,
+        "diem": score,
+        "ngaychoi": DateTime.now(),
+      });
+      updateUser();
+    }
   }
-
-//Đưa vào firebase
-
-  @override
-
-//
 
   List<IngameAnswer> getValue(int index) {
     List<IngameAnswer> temp = widget.questionAnswer[index];
@@ -206,7 +235,7 @@ class _ResultPageState extends State<ResultPage> {
                 alignment: AlignmentDirectional.center,
                 children: <Widget>[
                   Container(
-                    margin: EdgeInsets.only(top: 215, bottom: 55),
+                    margin: EdgeInsets.only(top: 250, bottom: 55),
                     child: SingleChildScrollView(
                       child: ListView.builder(
                         shrinkWrap: true,
@@ -270,9 +299,20 @@ class _ResultPageState extends State<ResultPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               mainAxisSize: MainAxisSize.max,
                               children: [
-                                Text("Lĩnh vực:"),
+                                Text("Lĩnh vực: " + widget.linhvuc.name),
                                 Text("Số câu hỏi: " +
                                     widget.cauHoi.length.toString()),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Text("Th.gian trả lời: ${widget.thoigian}phút"),
+                                Text(
+                                    "Th.gian còn lại: ${(widget.thoigianconlai / 60).toInt()}phút${(widget.thoigianconlai % 60).toInt()}giây"),
                               ],
                             ),
                           ),
@@ -303,6 +343,28 @@ class _ResultPageState extends State<ResultPage> {
                                   fontsize: 30,
                                 ),
                               ],
+                            ),
+                          ),
+                          Visibility(
+                            visible:
+                                (FirebaseAuth.instance.currentUser != null),
+                            child: Container(
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Text(
+                                    "Tiền thưởng: ",
+                                  ),
+                                  TextStroke(
+                                    content: score.toString().toUpperCase(),
+                                    fontfamily: "SVN-DeterminationSans",
+                                    fontsize: 20,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           Text(
