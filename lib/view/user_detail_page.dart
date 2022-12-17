@@ -15,7 +15,7 @@ class UserDetailPage extends StatelessWidget {
       this.gameplayed = 0})
       : super(key: key);
 
-  final User user;
+  final Player user;
   final GameHistory gameHistory;
   int gameplayed;
 

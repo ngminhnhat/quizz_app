@@ -187,12 +187,15 @@ class _AuthUserPageState extends State<AuthUserPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    CustomBtn(
-                      buttonImagePath: "assets/images/btn_blue.png",
-                      text: "Thay đổi thông tin".toUpperCase(),
-                      paddings: EdgeInsets.all(20),
+                    Flexible(
+                      child: CustomBtn(
+                        buttonImagePath: "assets/images/btn_blue.png",
+                        text: "Thay đổi thông tin".toUpperCase(),
+                        paddings: EdgeInsets.all(20),
+                      ),
                     ),
-                    CustomBtn(
+                    Flexible(
+                        child: CustomBtn(
                       buttonImagePath: "assets/images/btn_purple.png",
                       text: "Thay đổi mật khẩu".toUpperCase(),
                       paddings: EdgeInsets.all(20),
@@ -202,7 +205,7 @@ class _AuthUserPageState extends State<AuthUserPage> {
                             MaterialPageRoute(
                                 builder: (context) => Resetpassword()));
                       },
-                    )
+                    ))
                   ],
                 ),
               ),

@@ -17,7 +17,7 @@ class RankingPage extends StatefulWidget {
 
 class _RankingPageState extends State<RankingPage> {
   List<GameHistory> _gameHistory = [];
-  List<User> _user = [];
+  List<Player> _user = [];
   List<GameHistory> _userHighestHistory = [];
 
   @override
@@ -77,7 +77,7 @@ class _RankingPageState extends State<RankingPage> {
                           }
                           if (!duplicate) {
                             _userHighestHistory.add(temp);
-                            _user.add(User("Loading////", "Loading////",
+                            _user.add(Player("Loading////", "Loading////",
                                 "Loading////", 0, 0, "Loading////", 0));
                           }
                         }
@@ -102,7 +102,7 @@ class _RankingPageState extends State<RankingPage> {
                                 for (var element in data) {
                                   final r =
                                       element.data() as Map<String, dynamic>;
-                                  User temp = User(
+                                  Player temp = Player(
                                       r['Email'],
                                       r['PassWord'],
                                       r['Nickname'],

@@ -13,7 +13,7 @@ class RankingCard extends StatelessWidget {
       : super(key: key);
 
   final EdgeInsets edgeInset;
-  final User user;
+  final Player user;
   final GameHistory gameHistory;
 
   int a = 0;

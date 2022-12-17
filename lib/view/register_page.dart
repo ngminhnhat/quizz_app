@@ -148,7 +148,12 @@ class RegisterPage extends StatelessWidget {
                                   "CreateDate": DateTime.now(),
                                 });
                                 if (NewUser != null) {
-                                  Navigator.pop(context, "Thành công");
+                                  Navigator.pop(context,
+                                      "Đăng ký thành công, vui lòng đăng nhập!");
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: ((context) => LoginPage())));
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(

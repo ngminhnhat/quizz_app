@@ -1,12 +1,15 @@
 import 'package:empty_proj/component/currency_list.dart';
+import 'package:empty_proj/component/expand_button.dart';
 import 'package:empty_proj/component/game_option_dialog.dart';
 import 'package:empty_proj/component/home_btn.dart';
 import 'package:empty_proj/custome_effect/custom_sprite_animate.dart';
 import 'package:empty_proj/main.dart';
 import 'package:empty_proj/view/bag_page.dart';
 import 'package:empty_proj/view/history_page.dart';
+import 'package:empty_proj/view/login_page.dart';
 import 'package:empty_proj/view/ranking_page.dart';
 import 'package:empty_proj/view/shop_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,6 +27,9 @@ class _HomePageState extends State<HomePage>
   late Animation<double> _fadeInFadeOut;
   // ADD THIS AppLifecycleState VARIABLE
   late AppLifecycleState appLifecycle;
+
+  bool expand = false;
+  double _flip = 1;
 
   // ADD THIS FUNCTION WITH A AppLifecycleState PARAMETER
   didChangeAppLifecycleState(AppLifecycleState state) {
@@ -56,6 +62,17 @@ class _HomePageState extends State<HomePage>
     }
     SystemNavigator.pop();
     return Future.value(true);
+  }
+
+  void scroll() {
+    setState(() {
+      expand = !expand;
+      if (expand) {
+        _flip = -1;
+      } else {
+        _flip = 1;
+      }
+    });
   }
 
   @override
@@ -172,7 +189,7 @@ class _HomePageState extends State<HomePage>
               Positioned(
                 bottom: 100,
                 child: Transform.translate(
-                  offset: Offset(70, 0),
+                  offset: Offset(80, 0),
                   child: Container(
                     width: 50,
                     height: 50,
@@ -182,20 +199,63 @@ class _HomePageState extends State<HomePage>
                                 AssetImage('assets/images/play_btn_bg.png'))),
                     child: IconButton(
                       onPressed: (() {
-                        showDialog(
-                            context: context,
-                            builder: ((context) {
-                              return GameOptionDialog(
-                                title: "Thách đấu nhiều người",
-                                multi: true,
-                              );
-                            }));
+                        if (FirebaseAuth.instance.currentUser != null) {
+                          showDialog(
+                              context: context,
+                              builder: ((context) {
+                                return GameOptionDialog(
+                                  title: "Thách đấu nhiều người",
+                                  multi: true,
+                                );
+                              }));
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                  "Vui lòng đăng nhập hoặc đăng ký để sử dụng chức năng này!")));
+                        }
                       }),
                       icon: Icon(Icons.vpn_lock),
                     ),
                   ),
                 ),
-              )
+              ),
+              AnimatedPositioned(
+                  left: expand ? 0 : -230,
+                  child: ExpandButton(
+                    onTapExpand: () {
+                      scroll();
+                      print(_flip);
+                    },
+                    flip: _flip,
+                  ),
+                  duration: Duration(milliseconds: 250)),
+              AnimatedPositioned(
+                  left: expand ? 0 : -230,
+                  child: Visibility(
+                    visible: (FirebaseAuth.instance.currentUser == null),
+                    child: Stack(
+                        alignment: AlignmentDirectional.center,
+                        children: <Widget>[
+                          Container(
+                            width: 225,
+                            height: 80,
+                            child: Image.asset(
+                              "assets/images/auth_lock.png",
+                              fit: BoxFit.fill,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: ((context) => LoginPage())));
+                            },
+                            child: Text('Yêu cầu đăng nhập'.toUpperCase()),
+                          )
+                        ]),
+                  ),
+                  duration: Duration(milliseconds: 250))
             ],
           ),
         ),
