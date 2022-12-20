@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:empty_proj/component/logo.dart';
 import 'package:empty_proj/component/user_card.dart';
 import 'package:empty_proj/models/friend_data.dart';
 import 'package:empty_proj/models/user.dart';
@@ -66,8 +67,9 @@ class _ListFriendState extends State<ListFriend> {
               height: 100,
             )
           ]),
+          Logo(text: "Danh sách bạn bè".toUpperCase(), fontsize: 45),
           Container(
-            margin: EdgeInsets.only(top: 125, left: 1, right: 1),
+            margin: EdgeInsets.only(top: 180, left: 1, right: 1),
             child: SingleChildScrollView(
                 child: StreamBuilder(
               stream: FirebaseFirestore.instance
@@ -115,13 +117,19 @@ class _ListFriendState extends State<ListFriend> {
                           }
                         }
                       }
+                      if (_list.length == 0) {
+                        return Container(
+                          margin: EdgeInsets.only(top: 100),
+                          alignment: Alignment.center,
+                          child: Text("Danh sách bạn trống."),
+                        );
+                      }
                       return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         itemCount: _list.length,
                         scrollDirection: Axis.vertical,
                         itemBuilder: (context, index) {
-                          int temp = index + 1;
                           return UserCard(
                             user: _list[index],
                           );

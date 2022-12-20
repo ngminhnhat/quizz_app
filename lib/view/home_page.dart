@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:empty_proj/component/currency_list.dart';
 import 'package:empty_proj/component/expand_button.dart';
 import 'package:empty_proj/component/game_option_dialog.dart';
@@ -5,6 +6,7 @@ import 'package:empty_proj/component/home_btn.dart';
 import 'package:empty_proj/custome_effect/custom_sprite_animate.dart';
 import 'package:empty_proj/main.dart';
 import 'package:empty_proj/view/bag_page.dart';
+import 'package:empty_proj/view/challenge_lobby.dart';
 import 'package:empty_proj/view/history_page.dart';
 import 'package:empty_proj/view/login_page.dart';
 import 'package:empty_proj/view/ranking_page.dart';
@@ -200,14 +202,13 @@ class _HomePageState extends State<HomePage>
                     child: IconButton(
                       onPressed: (() {
                         if (FirebaseAuth.instance.currentUser != null) {
-                          showDialog(
-                              context: context,
-                              builder: ((context) {
-                                return GameOptionDialog(
-                                  title: "Thách đấu nhiều người",
-                                  multi: true,
-                                );
-                              }));
+                          player.stop();
+                          player.play(AssetSource("audios/ingame_audio.mp3"));
+                          player.setReleaseMode(ReleaseMode.loop);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: ((context) => ChallengeLobby())));
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(

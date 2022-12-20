@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:empty_proj/component/logo.dart';
 import 'package:empty_proj/component/user_card.dart';
 import 'package:empty_proj/models/request_data.dart';
 import 'package:empty_proj/models/user.dart';
@@ -28,8 +29,12 @@ class _ListFriendRequestState extends State<ListFriendRequest> {
               height: 100,
             )
           ]),
+          Logo(
+            text: "Yêu cầu kết bạn".toUpperCase(),
+            fontsize: 45,
+          ),
           Container(
-            margin: EdgeInsets.only(top: 125, left: 1, right: 1),
+            margin: EdgeInsets.only(top: 180, left: 1, right: 1),
             child: SingleChildScrollView(
                 child: StreamBuilder(
               stream: FirebaseFirestore.instance
@@ -76,6 +81,13 @@ class _ListFriendRequestState extends State<ListFriendRequest> {
                             }
                           }
                         }
+                      }
+                      if (_list.length == 0) {
+                        return Container(
+                          margin: EdgeInsets.only(top: 100),
+                          alignment: Alignment.center,
+                          child: Text("Hiện tại chưa có lời mời kết bạn nào."),
+                        );
                       }
                       return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),

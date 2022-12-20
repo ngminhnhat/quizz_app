@@ -47,6 +47,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                 .where('emailuser',
                                     isEqualTo: FirebaseAuth
                                         .instance.currentUser!.email)
+                                .where('ischallenge', isEqualTo: 0)
                                 .orderBy('ngaychoi', descending: true)
                                 .snapshots(),
                             builder: (context, snapshot) {

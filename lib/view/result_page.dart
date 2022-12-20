@@ -76,6 +76,7 @@ class _ResultPageState extends State<ResultPage> {
       User user = _auth.currentUser!;
       FirebaseFirestore.instance.collection('history').add({
         "emailuser": user.email,
+        "ischallenge": 0,
         "socauhoi": widget.cauHoi.length,
         "socautraloidung": numOfCorrect,
         "thoigiantraloi": widget.thoigian * 60,

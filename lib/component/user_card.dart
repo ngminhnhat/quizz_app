@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empty_proj/component/custom_dialog.dart';
+import 'package:empty_proj/models/game_history.dart';
 import 'package:empty_proj/models/user.dart';
+import 'package:empty_proj/view/user_detail_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class UserCard extends StatelessWidget {
   const UserCard({Key? key, required this.user, this.state = 0})
@@ -217,7 +220,43 @@ class UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: (() {}),
+      onTap: (() async {
+        int _gameplayed = 0;
+        GameHistory gameHistory = GameHistory(
+            diem: 0,
+            emailuser: 'emailuser',
+            ngaychoi: "0",
+            socauhoi: 0,
+            socautraloidung: 0,
+            thoigianconlai: 0,
+            thoigiantraloi: 0);
+        QuerySnapshot query = await FirebaseFirestore.instance
+            .collection('history')
+            .where('emailuser', isEqualTo: user.email)
+            .orderBy('diem', descending: true)
+            .get();
+        if (query.docs.isNotEmpty) {
+          _gameplayed = query.docs.length;
+          gameHistory = GameHistory(
+              diem: query.docs[0]['diem'],
+              emailuser: query.docs[0]['emailuser'],
+              ngaychoi: DateFormat('dd-MM-yyyy')
+                  .format(query.docs[0]['ngaychoi'].toDate())
+                  .toString(),
+              socauhoi: query.docs[0]['socauhoi'],
+              socautraloidung: query.docs[0]['socautraloidung'],
+              thoigianconlai: query.docs[0]['thoigianconlai'],
+              thoigiantraloi: query.docs[0]['thoigiantraloi']);
+        }
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: ((context) => UserDetailPage(
+                      user: user,
+                      gameHistory: gameHistory,
+                      gameplayed: _gameplayed,
+                    ))));
+      }),
       child: Container(
           margin: const EdgeInsets.only(left: 10, right: 10, top: 15),
           padding:

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empty_proj/component/custom_alert.dart';
 import 'package:empty_proj/component/custom_btn.dart';
+import 'package:empty_proj/component/logo.dart';
 import 'package:empty_proj/component/user_card.dart';
 import 'package:empty_proj/models/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -73,9 +74,13 @@ class _ListUserState extends State<ListUser> {
               height: 100,
             )
           ]),
+          Logo(
+            text: "Tìm bạn".toUpperCase(),
+            fontsize: 45,
+          ),
           Container(
             padding: EdgeInsets.all(5),
-            margin: EdgeInsets.only(left: 10, right: 10, bottom: 10, top: 50),
+            margin: EdgeInsets.only(left: 10, right: 10, bottom: 10, top: 180),
             child: Row(
               children: [
                 Flexible(
@@ -104,7 +109,7 @@ class _ListUserState extends State<ListUser> {
             ),
           ),
           Container(
-            margin: EdgeInsets.only(top: 125, left: 1, right: 1),
+            margin: EdgeInsets.only(top: 250, left: 1, right: 1),
             child: SingleChildScrollView(
                 child: ListView.builder(
               physics: const NeverScrollableScrollPhysics(),
